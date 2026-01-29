@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Site - Public</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>🌐 Mon Site Web</h1>
+        <nav>
+            <a href="index.html">Accueil</a>
+            <a href="admin.html" id="admin-link">Admin</a>
+        </nav>
+    </header>
+    
+    <main>
+        <section id="articles">
+            <h2>Derniers Articles</h2>
+            <div id="articles-list">
+                <!-- Les articles apparaîtront ici -->
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <p>© 2024 - Hébergé sur GitHub Pages</p>
+    </footer>
+    
+    <script src="js/data.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // Afficher les articles publics
+        document.addEventListener('DOMContentLoaded', function() {
+            const articles = JSON.parse(localStorage.getItem('articles')) || [
+                {id: 1, titre: "Bienvenue", contenu: "C'est mon premier site!", publie: true, date: "2024-01-01"}
+            ];
+            
+            const articlesList = document.getElementById('articles-list');
+            const articlesPublic = articles.filter(a => a.publie);
+            
+            articlesPublic.forEach(article => {
+                articlesList.innerHTML += `
+                    <article class="card">
+                        <h3>${article.titre}</h3>
+                        <p>${article.contenu}</p>
+                        <small>Publié le: ${article.date}</small>
+                    </article>
+                `;
+            });
+        });
+    </script>
+</body>
+      </html>
