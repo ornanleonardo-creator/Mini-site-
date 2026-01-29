@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>⚙️ Panel d'Administration</h1>
+        <nav>
+            <a href="index.html">Site public</a>
+            <button onclick="logout()">Déconnexion</button>
+        </nav>
+    </header>
+    
+    <main>
+        <!-- Vérification de connexion -->
+        <div id="auth-check" style="text-align: center; padding: 2rem;">
+            <p>Vérification des permissions...</p>
+        </div>
+        
+        <!-- Contenu admin (caché par défaut) -->
+        <div id="admin-content" style="display: none;">
+            <section class="admin-section">
+                <h2>📝 Gestion des Articles</h2>
+                
+                <div class="form-container">
+                    <h3>Nouvel Article</h3>
+                    <form id="article-form">
+                        <input type="text" id="article-title" placeholder="Titre" required>
+                        <textarea id="article-content" placeholder="Contenu" rows="4" required></textarea>
+                        <label>
+                            <input type="checkbox" id="article-published"> Publié immédiatement
+                        </label>
+                        <button type="submit">Ajouter l'article</button>
+                    </form>
+                </div>
+                
+                <div class="articles-list">
+                    <h3>Articles existants</h3>
+                    <div id="articles-container">
+                        <!-- Liste des articles -->
+                    </div>
+                </div>
+            </section>
+            
+            <section class="admin-section">
+                <h2>📊 Statistiques</h2>
+                <div class="stats">
+                    <div class="stat-card">
+                        <h3>Articles</h3>
+                        <p id="total-articles">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Publiés</h3>
+                        <p id="published-articles">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Brouillons</h3>
+                        <p id="draft-articles">0</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+    
+    <script src="js/auth.js"></script>
+    <script src="js/admin.js"></script>
+    <script>
+        // Vérifie si l'utilisateur est connecté
+        document.addEventListener('DOMContentLoaded', function() {
+            const isLoggedIn = sessionStorage.getItem('loggedIn');
+            const role = sessionStorage.getItem('role');
+            
+            if (isLoggedIn === 'true' && role === 'admin') {
+                document.getElementById('auth-check').style.display = 'none';
+                document.getElementById('admin-content').style.display = 'block';
+                loadArticles();
+                updateStats();
+            } else {
+                // Redirige vers la page de connexion
+                setTimeout(() => {
+                    window.location.href = "login.html";
+                }, 1500);
+            }
+        });
+        
+        function loadArticles() {
+            const articles = JSON.parse(localStorage.getItem('articles')) || [];
+            const container = document.getElementById('articles-container');
+            
+            container.innerHTML = '';
+            
+            articles.forEach(article => {
+                const status = article.publie ? '🟢 Publié' : '🟡 Brouillon';
+                container.innerHTML += `
+                    <div class="article-item">
+                        <h4>${article.titre}</h4>
+                        <p>${article.contenu.substring(0, 100)}...</p>
+                        <small>${status} | ID: ${article.id}</small>
+                        <div class="article-actions">
+                            <button onclick="togglePublish(${article.id})">
+                                ${article.publie ? 'Mettre en brouillon' : 'Publier'}
+                            </button>
+                            <button onclick="deleteArticle(${article.id})" class="delete">
+                                Supprimer
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        function updateStats() {
+            const articles = JSON.parse(localStorage.getItem('articles')) || [];
+            const total = articles.length;
+            const published = articles.filter(a => a.publie).length;
+            
+            document.getElementById('total-articles').textContent = total;
+            document.getElementById('published-articles').textContent = published;
+            document.getElementById('draft-articles').textContent = total - published;
+        }
+        
+        // Gestion du formulaire
+        document.getElementById('article-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('article-title').value;
+            const content = document.getElementById('article-content').value;
+            const published = document.getElementById('article-published').checked;
+            
+            const articles = JSON.parse(localStorage.getItem('articles')) || [];
+            const newId = articles.length > 0 ? Math.max(...articles.map(a => a.id)) + 1 : 1;
+            
+            const newArticle = {
+                id: newId,
+                titre: title,
+                contenu: content,
+                publie: published,
+                date: new Date().toISOString().split('T')[0]
+            };
+            
+            articles.push(newArticle);
+            localStorage.setItem('articles', JSON.stringify(articles));
+            
+            // Reset le formulaire
+            this.reset();
+            
+            // Recharge la liste
+            loadArticles();
+            updateStats();
+            
+            alert('Article ajouté avec succès!');
+        });
+    </script>
+</body>
+                          </html>
