@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Accès Administrateur</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            font-family: 'Courier New', monospace;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+        
+        .portal {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 3rem;
+            border-radius: 15px;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        h1 {
+            color: #00ffff;
+            margin-bottom: 2rem;
+            font-size: 1.8rem;
+        }
+        
+        .password-input {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.2rem;
+            background: #111;
+            color: #0f0;
+            border: 1px solid #00ffff;
+            border-radius: 5px;
+            text-align: center;
+            letter-spacing: 0.2rem;
+            font-family: monospace;
+        }
+        
+        .submit-btn {
+            margin-top: 1.5rem;
+            padding: 0.8rem 2rem;
+            background: transparent;
+            color: #00ffff;
+            border: 2px solid #00ffff;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .submit-btn:hover {
+            background: #00ffff;
+            color: #000;
+        }
+        
+        .error {
+            color: #ff4444;
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        .hint {
+            color: #666;
+            font-size: 0.8rem;
+            margin-top: 2rem;
+            font-style: italic;
+        }
+        
+        .admin-key {
+            color: #ff9900;
+            background: #222;
+            padding: 0.5rem;
+            border-radius: 3px;
+            font-family: monospace;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="portal">
+        <h1>🔐 PORTAL ADMIN</h1>
+        <p>Accès restreint au personnel autorisé</p>
+        
+        <div style="margin: 2rem 0;">
+            <input type="password" 
+                   id="adminKey" 
+                   class="password-input" 
+                   placeholder="Entrez la clé d'accès"
+                   autocomplete="off">
+            <div id="errorMessage" class="error">Clé incorrecte</div>
+        </div>
+        
+        <button onclick="verifyAccess()" class="submit-btn">
+            VALIDER L'ACCÈS
+        </button>
+        
+        <div class="hint">
+            <p>Pour configurer la clé admin :</p>
+            <div class="admin-key">localStorage.setItem('ADMIN_KEY', 'votre-cle-secrete')</div>
+            <p>Ensuite, utilisez cette clé pour accéder au panel.</p>
+        </div>
+    </div>
+    
+    <script>
+        // Fonction de vérification
+        function verifyAccess() {
+            const inputKey = document.getElementById('adminKey').value;
+            const storedKey = localStorage.getItem('ADMIN_KEY');
+            
+            // Clé par défaut (à changer!)
+            const defaultKey = "ADMIN123";
+            
+            // Vérifie si la clé correspond
+            if (inputKey === (storedKey || defaultKey)) {
+                // Crée une session admin
+                sessionStorage.setItem('adminAuthenticated', 'true');
+                sessionStorage.setItem('loginTime', Date.now());
+                
+                // Redirige vers le panel admin
+                window.location.href = "../panel/";
+            } else {
+                // Affiche l'erreur avec effet
+                const error = document.getElementById('errorMessage');
+                error.style.display = 'block';
+                document.getElementById('adminKey').style.borderColor = '#ff4444';
+                
+                // Secoue l'input
+                document.getElementById('adminKey').classList.add('shake');
+                setTimeout(() => {
+                    document.getElementById('adminKey').classList.remove('shake');
+                }, 500);
+            }
+        }
+        
+        // Permet d'appuyer sur Enter
+        document.getElementById('adminKey').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                verifyAccess();
+            }
+        });
+        
+        // Animation shake
+        const style = document.createElement('style');
+        style.textContent = `
+            .shake {
+                animation: shake 0.5s;
+            }
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-10px); }
+                75% { transform: translateX(10px); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Effet de terminal
+        let dots = 0;
+        setInterval(() => {
+            const status = ['🔐 Vérification en cours', '🔐 Vérification en cours.', 
+                           '🔐 Vérification en cours..', '🔐 Vérification en cours...'];
+            document.querySelector('p').textContent = status[dots % 4];
+            dots++;
+        }, 500);
+    </script>
+</body>
+  </html>
