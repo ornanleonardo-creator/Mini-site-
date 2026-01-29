@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Admin</title>
+    <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body>
+    <!-- Vérification de sécurité -->
+    <div id="securityCheck">
+        <div class="security-modal">
+            <div class="spinner"></div>
+            <p>Vérification des permissions...</p>
+        </div>
+    </div>
+    
+    <!-- Contenu admin (caché initialement) -->
+    <div id="adminPanel" style="display: none;">
+        <header class="admin-header">
+            <div class="header-left">
+                <h1>⚙️ PANEL ADMINISTRATEUR</h1>
+                <div class="session-info">
+                    <span>Connecté en tant que: <strong id="adminName">Super Admin</strong></span>
+                    <span id="sessionTimer">Session: 14:59</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <button onclick="adminLogout()" class="logout-btn">🚪 Déconnexion</button>
+            </div>
+        </header>
+        
+        <nav class="admin-nav">
+            <a href="#dashboard" class="nav-active">📊 Tableau de bord</a>
+            <a href="#content">📝 Contenu</a>
+            <a href="#users">👥 Utilisateurs</a>
+            <a href="#settings">⚙️ Paramètres</a>
+            <a href="#stats">📈 Statistiques</a>
+        </nav>
+        
+        <main class="admin-main">
+            <section id="dashboard" class="tab-content active">
+                <h2>Tableau de Bord</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Visiteurs</h3>
+                        <p class="stat-number">1,247</p>
+                        <small>Aujourd'hui</small>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Articles</h3>
+                        <p class="stat-number" id="articleCount">0</p>
+                        <small>En ligne</small>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Commentaires</h3>
+                        <p class="stat-number">42</p>
+                        <small>En attente</small>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="content" class="tab-content">
+                <h2>Gestion du Contenu</h2>
+                <!-- Formulaire d'ajout d'article -->
+            </section>
+        </main>
+        
+        <footer class="admin-footer">
+            <p>© 2024 - Admin Panel v1.0 | <span id="serverTime">...</span></p>
+            <p class="security-note">🔒 Session sécurisée - Toutes les actions sont journalisées</p>
+        </footer>
+    </div>
+    
+    <script src="../assets/js/admin-panel.js"></script>
+    <script>
+        // VÉRIFICATION DE SÉCURITE RENFORCÉE
+        document.addEventListener('DOMContentLoaded', function() {
+            const isAuthenticated = sessionStorage.getItem('adminAuthenticated');
+            const loginTime = parseInt(sessionStorage.getItem('loginTime') || 0);
+            const now = Date.now();
+            
+            // Vérifie: 1. Authentification, 2. Session < 2h, 3. Vient bien du portail
+            if (isAuthenticated === 'true' && 
+                (now - loginTime) < (2 * 60 * 60 * 1000) &&
+                document.referrer.includes('s3cr3t-adm1n-portal')) {
+                
+                // Affiche le panel
+                document.getElementById('securityCheck').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                
+                // Initialise le panel
+                initializeAdminPanel();
+                
+                // Gestion de la session (expire après 2h)
+                setTimeout(() => {
+                    sessionStorage.removeItem('adminAuthenticated');
+                    alert('Session expirée!');
+                    window.location.href = "../s3cr3t-adm1n-portal/";
+                }, 2 * 60 * 60 * 1000);
+                
+            } else {
+                // Redirection sécurisée
+                setTimeout(() => {
+                    // Nettoie la session
+                    sessionStorage.clear();
+                    // Redirige vers le portail
+                    window.location.href = "../s3cr3t-adm1n-portal/";
+                }, 2000);
+            }
+        });
+        
+        function initializeAdminPanel() {
+            // Met à jour le timer de session
+            updateSessionTimer();
+            setInterval(updateSessionTimer, 60000);
+            
+            // Charge les données
+            loadAdminData();
+            
+            // Navigation par onglets
+            document.querySelectorAll('.admin-nav a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    
+                    // Met à jour la navigation
+                    document.querySelectorAll('.admin-nav a').forEach(a => a.classList.remove('nav-active'));
+                    this.classList.add('nav-active');
+                    
+                    // Affiche le bon onglet
+                    document.querySelectorAll('.tab-content').forEach(tab => {
+                        tab.classList.remove('active');
+                    });
+                    document.getElementById(targetId).classList.add('active');
+                });
+            });
+        }
+        
+        function adminLogout() {
+            if (confirm('Voulez-vous vraiment vous déconnecter?')) {
+                sessionStorage.clear();
+                window.location.href = "../s3cr3t-adm1n-portal/";
+            }
+        }
+        
+        function updateSessionTimer() {
+            const loginTime = parseInt(sessionStorage.getItem('loginTime'));
+            const now = Date.now();
+            const diff = now - loginTime;
+            const minutesLeft = Math.max(0, 120 - Math.floor(diff / 60000));
+            
+            document.getElementById('sessionTimer').textContent = 
+                `Session: ${Math.floor(minutesLeft/60)}h${minutesLeft%60}m`;
+        }
+    </script>
+</body>
+  </html>
