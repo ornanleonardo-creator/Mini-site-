@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion Admin</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <h2>🔐 Connexion Admin</h2>
+            <form id="login-form">
+                <input type="text" id="username" placeholder="Nom d'utilisateur" required>
+                <input type="password" id="password" placeholder="Mot de passe" required>
+                <button type="submit">Se connecter</button>
+            </form>
+            <p id="error-message" class="error"></p>
+            <p><small>Utilisateur par défaut: admin / admin123</small></p>
+            <a href="index.html">← Retour au site</a>
+        </div>
+    </div>
+    
+    <script src="js/auth.js"></script>
+    <script>
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Vérification simple (en réalité, jamais mettre de mots de passe en clair!)
+            const users = JSON.parse(localStorage.getItem('users')) || [
+                {username: "admin", password: "admin123", role: "admin"}
+            ];
+            
+            const user = users.find(u => u.username === username && u.password === password);
+            
+            if (user) {
+                // Stocke la session
+                sessionStorage.setItem('loggedIn', 'true');
+                sessionStorage.setItem('username', user.username);
+                sessionStorage.setItem('role', user.role);
+                
+                // Redirige vers l'admin
+                window.location.href = "admin.html";
+            } else {
+                document.getElementById('error-message').textContent = "Identifiants incorrects!";
+            }
+        });
+    </script>
+</body>
+</html>
